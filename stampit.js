@@ -16,7 +16,18 @@ var mixInChain = require('./mixinchain.js');
 var slice = [].slice;
 
 // Avoiding JSHist W003 violations.
-var extractFunctions, stampit, compose, isStamp, convertConstructor;
+var create, extractFunctions, stampit, compose, isStamp, convertConstructor;
+
+// This function is necessary for IE8 compatibility.
+create = function (o) {
+  if (arguments.length > 1) {
+    throw new Error('Object.create implementation only accepts the first parameter.');
+  }
+  function F() {}
+
+  F.prototype = o;
+  return new F();
+};
 
 if (!Array.isArray) {
   Array.isArray = function (vArg) {
@@ -69,7 +80,7 @@ stampit = function stampit(methods, state, enclose) {
   function Stamp(properties) {
     if (!(this instanceof Stamp)) {
       // The stamp was called as a factory - HorseStamp();
-      var obj = Object.create(Stamp.prototype);
+      var obj = create(Stamp.prototype);
       Stamp.apply(obj, arguments);
       return obj;
     } else {
