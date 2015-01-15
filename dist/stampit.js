@@ -537,17 +537,7 @@ var mixInChain = require('./mixinchain.js');
 var slice = [].slice;
 
 // Avoiding JSHist W003 violations.
-var create, extractFunctions, stampit, compose, isStamp, convertConstructor;
-
-create = function (o) {
-  if (arguments.length > 1) {
-    throw new Error('Object.create implementation only accepts the first parameter.');
-  }
-  function F() {}
-
-  F.prototype = o;
-  return new F();
-};
+var extractFunctions, stampit, compose, isStamp, convertConstructor;
 
 if (!Array.isArray) {
   Array.isArray = function (vArg) {
@@ -592,14 +582,23 @@ extractFunctions = function extractFunctions(arg) {
  */
 stampit = function stampit(methods, state, enclose) {
   var fixed = {
-      methods: methods || {},
-      state: state,
-      enclose: extractFunctions(enclose)
-    },
+    methods: methods || {},
+    state: state || {},
+    enclose: extractFunctions(enclose)
+  };
 
-    factory = function factory(properties) {
-      var state = merge({}, fixed.state, properties),
-        instance = mixIn(create(fixed.methods || {}), state),
+  function Stamp(properties) {
+    if (!(this instanceof Stamp)) {
+      // The stamp was called as a factory - HorseStamp();
+      var obj = Object.create(Stamp.prototype);
+      Stamp.apply(obj, arguments);
+      return obj;
+    } else {
+      // The stamp was called as a constructor - new HorseStamp();
+      mixIn(Stamp.prototype, fixed.methods);
+      var
+        state = merge({}, fixed.state, properties),
+        instance = mixIn(this, state),
         closures = fixed.enclose,
         args = slice.call(arguments, 1);
 
@@ -608,12 +607,11 @@ stampit = function stampit(methods, state, enclose) {
           instance = fn.apply(instance, args) || instance;
         }
       });
+    }
+  }
 
-      return instance;
-    };
-
-  return mixIn(factory, {
-    create: factory,
+  return mixIn(Stamp, {
+    create: Stamp,
     fixed: fixed,
     /**
      * Take n objects and add them to the methods prototype.
@@ -695,12 +693,12 @@ compose = function compose(factories) {
  */
 isStamp = function isStamp(obj) {
   return (
-    typeof obj === 'function' &&
-    typeof obj.fixed === 'object' &&
-    typeof obj.methods === 'function' &&
-    typeof obj.state === 'function' &&
-    typeof obj.enclose === 'function'
-    );
+  typeof obj === 'function' &&
+  typeof obj.fixed === 'object' &&
+  typeof obj.methods === 'function' &&
+  typeof obj.state === 'function' &&
+  typeof obj.enclose === 'function'
+  );
 };
 
 /**
