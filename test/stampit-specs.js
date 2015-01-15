@@ -438,3 +438,42 @@ test('The stamp.compose() should deep merge state', function () {
   equal(o.deep.bar, 'bar');
   equal(o.deep.baz, 'baz');
 });
+
+test('Stamp(),  Stamp.create(),  new Stamp() should produce the same', function () {
+  var Stamp = stampit({ m: function(){} } , { prop: 1 });
+  var o1 = Stamp();
+  var o2 = Stamp.create();
+  var o3 = new Stamp();
+
+  equal(o1.prop, 1);
+  equal(o2.prop, 1);
+  equal(o3.prop, 1);
+  ok(o1.m && !o1.hasOwnProperty('m'));
+  ok(o2.m && !o2.hasOwnProperty('m'));
+  ok(o3.m && !o3.hasOwnProperty('m'));
+});
+
+test('Stamp(),  Stamp.create(),  new Stamp() should be instance of Stamp', function () {
+  var Stamp = stampit({ m: function(){} } , { prop: 1 });
+  var o1 = Stamp();
+  var o2 = Stamp.create();
+  var o3 = new Stamp();
+
+  ok(o1 instanceof Stamp);
+  ok(o2 instanceof Stamp);
+  ok(o3 instanceof Stamp);
+});
+
+test('Stamp(),  Stamp.create(),  new Stamp() use all arguments', function () {
+  var Stamp = stampit(null, { prop: 1 }, function (arg) { this.arg = arg; });
+  var o1 = Stamp({ prop: 2 }, "passed");
+  var o2 = Stamp.create({ prop: 2 }, "passed");
+  var o3 = new Stamp({ prop: 2 }, "passed");
+
+  equal(o1.prop, 2);
+  equal(o1.arg, "passed");
+  equal(o2.prop, 2);
+  equal(o2.arg, "passed");
+  equal(o3.prop, 2);
+  equal(o3.arg, "passed");
+});

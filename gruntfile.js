@@ -5,7 +5,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: '<json:package.json>',
     jshint: {
-      all: ['./stampit.js', './test/stampit-specs.js'],
+      all: ['./stampit.js'],
       options: {
         curly: true,
         eqeqeq: true,
